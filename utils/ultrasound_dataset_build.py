@@ -234,7 +234,7 @@ class UltrasoundDatasetBuild:
                 os.makedirs(self.seg_save_dir, exist_ok=True)
                 save_seg_name = 'case%06d.npy' % self.write_cnt
                 np.save(os.path.join(self.seg_save_dir, save_seg_name), seg)
-                DataInfo['seg_path'] = os.path.join(self.dataset_info['DatasetName'], 'seg', save_data_name)
+                DataInfo['seg_path'] = os.path.join(self.dataset_info['DatasetName'], 'seg', save_seg_name)
 
                 if box is None:
                     box_list = []
