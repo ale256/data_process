@@ -46,10 +46,12 @@ class UltrasoundDatasetBuild:
             'IncludeDemographic': False,
             'IncludeBiochemical': False,
             'IncludeMeasurement': False,
+            'IncludeKeypoints': False,
             'SegChannel': 0,
             'AnatomyLocation': [],
             'ClassesList': [],
             'MeasuresList': [],
+            'KeypointsList': [],
             'DataInfo': {}
         }
 
@@ -139,7 +141,8 @@ class UltrasoundDatasetBuild:
         return image
 
     def write_data(self, data, seg=None, seg_channel_name=None, classes=None, sub_classes=None,
-                   caption=None, report=None, box=None, anatomy='default', show_seg=False, measurement=None, demographic=None, biochemical=None, original_path=None):
+                   caption=None, report=None, box=None, anatomy='default', show_seg=False, measurement=None, demographic=None, biochemical=None, original_path=None,
+                   keypoints=None, keypoint_names=None):
         """
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
@@ -157,6 +160,10 @@ class UltrasoundDatasetBuild:
         :param biochemical: 输入一个字典，包含患者临床生化指标，如血液检测信息
         eg：{"Scr(male $53\sim106\mu mol/L$; female:$44\sim97\mu mol/L$)": 88, TC($2.8\sim5.17mmol/L$): 4}, 命名请遵循驼峰命名法，value内容小写
         :param original_path: Original file path of the data
+        :param keypoints: Dictionary of keypoint coordinates, format: 
+                        {"keypoint_name": [x, y], ...} where x,y are relative coordinates (0-1)
+                        or None if the keypoint is not present
+        :param keypoint_names: List of keypoint names to maintain consistent ordering
         :return:
         """
 
@@ -174,6 +181,24 @@ class UltrasoundDatasetBuild:
         if classes not in self.dataset_info['ClassesList']:
             self.dataset_info['ClassesList'].append(classes)
             self.dataset_info['ClassesList'].sort()
+
+        if keypoint_names is None:
+            keypoint_names = []
+
+        if keypoints is not None:
+            assert isinstance(keypoints, dict), "Keypoints must be a dictionary"
+            self.dataset_info['IncludeKeypoints'] = True
+            
+            # Validate keypoint format
+            for kp_name, kp_data in keypoints.items():
+                if kp_data is not None:
+                    assert len(kp_data) == 2, f"Keypoint {kp_name} must have [x, y] or be None"
+                    assert 0 <= kp_data[0] <= 1, f"Keypoint {kp_name} x coordinate must be between 0 and 1"
+                    assert 0 <= kp_data[1] <= 1, f"Keypoint {kp_name} y coordinate must be between 0 and 1"
+                
+                if kp_name not in self.dataset_info['KeypointsList']:
+                    self.dataset_info['KeypointsList'].append(kp_name)
+                    self.dataset_info['KeypointsList'].sort()
 
         if anatomy not in self.dataset_info['AnatomyLocation']:
             self.dataset_info['AnatomyLocation'].append(anatomy)
@@ -208,6 +233,7 @@ class UltrasoundDatasetBuild:
             'report': report,
             'box': box,
             'measurement': measurement,
+            'keypoints': keypoints,
             'demographic': demographic,
             'biochemical': biochemical,
         }
