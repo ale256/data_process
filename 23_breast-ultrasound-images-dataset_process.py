@@ -9,12 +9,12 @@ from utils.ultrasound_dataset_build import UltrasoundDatasetBuild
 data_root = '/media/ps/data/Datasets/ultrasound/Dataset_BUSI_with_GT'
 
 # 输出路径
-out_dir = '/media/ps/data/Datasets/ultrasound/processed_data/23_all_v2'
+out_dir = '/media/ps/data/Datasets/ultrasound/bm_pre_json/23'
 
 tasks = 'breast'
 
 ud = UltrasoundDatasetBuild('23.breast-ultrasound-images-dataset', out_dir,
-                            data_type='img', create_user='lhn')
+                            data_type='img', create_user='xxx')
 
 
 classes_list = os.listdir(data_root)

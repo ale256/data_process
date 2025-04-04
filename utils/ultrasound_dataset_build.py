@@ -45,6 +45,7 @@ class UltrasoundDatasetBuild:
             'IncludeReport': False,
             'IncludeDemographic': False,
             'IncludeBiochemical': False,
+            'IncludeMeasurement': False,
             'SegChannel': 0,
             'AnatomyLocation': [],
             'ClassesList': [],
@@ -164,6 +165,7 @@ class UltrasoundDatasetBuild:
 
         if measurement is not None:
             assert isinstance(measurement, dict)
+            self.dataset_info['IncludeMeasurement'] = True
             for key, _ in measurement.items():
                 if key not in self.dataset_info['MeasuresList']:
                     self.dataset_info['MeasuresList'].append(key)
