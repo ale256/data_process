@@ -76,5 +76,6 @@ ud.write_data(self, data, seg=None, seg_channel_name=None, classes=None, sub_cla
 6. 对于没有规定命名的字典，比如measurement，请参看注释里的命名方法
 7. 可以参照 [23_breast-ultrasound-images-dataset_process.py](23_breast-ultrasound-images-dataset_process.py) 程序查看数据库建立的具体流程
 8. 有问题请联系翁韬涵
-9. 新增：数据集处理成json的时候要保留原文件名
-10. 新增：IncludeMeasurement选项
+9. **新增：数据集处理成json的时候要保留原文件名**
+10. **新增(Apr 4)：IncludeMeasurement选项**
+11. **新增(Apr 4)：Keypoint Detection Task**
