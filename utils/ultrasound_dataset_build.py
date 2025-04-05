@@ -141,11 +141,12 @@ class UltrasoundDatasetBuild:
 
         return image
 
-    def write_data(self, data, seg, seg_channel_name, classes, sub_classes,
+    def write_data(self, *, data, seg, seg_channel_name, classes, sub_classes,
                    caption, report, box, anatomy, show_seg, 
                    measurement, demographic, biochemical, original_path,
                    keypoints, keypoint_names, split):
         """
+        All arguments are keyword arguments, and must be provided.
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
         :param seg: 分割图像，默认为None，只有在传入的是img数据才会有seg,输入格式为（c,h,w）,保存为npy格式,dtype为bool
