@@ -141,9 +141,10 @@ class UltrasoundDatasetBuild:
 
         return image
 
-    def write_data(self, data, seg=None, seg_channel_name=None, classes=None, sub_classes=None,
-                   caption=None, report=None, box=None, anatomy='default', show_seg=False, measurement=None, demographic=None, biochemical=None, original_path=None,
-                   keypoints=None, keypoint_names=None, split=None):
+    def write_data(self, data, seg, seg_channel_name, classes, sub_classes,
+                   caption, report, box, anatomy, show_seg, 
+                   measurement, demographic, biochemical, original_path,
+                   keypoints, keypoint_names, split):
         """
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
@@ -168,6 +169,31 @@ class UltrasoundDatasetBuild:
         :param split: Which split this data belongs to ('train', 'val', 'test', or None)
         :return:
         """
+        # Check if all required parameters are provided
+        required_args = {
+            'data': data,
+            'seg': seg,
+            'seg_channel_name': seg_channel_name,
+            'classes': classes,
+            'sub_classes': sub_classes,
+            'caption': caption,
+            'report': report,
+            'box': box,
+            'anatomy': anatomy,
+            'show_seg': show_seg,
+            'measurement': measurement,
+            'demographic': demographic,
+            'biochemical': biochemical,
+            'original_path': original_path,
+            'keypoints': keypoints,
+            'keypoint_names': keypoint_names,
+            'split': split
+        }
+
+        for arg_name, arg_value in required_args.items():
+            if arg_value is NotImplemented:  # Using NotImplemented instead of None for validation
+                raise ValueError(f"Argument '{arg_name}' is not provided. Please input None if not included in the dataset.")
+        
 
         if seg_channel_name is None:
             seg_channel_name = ['tumor']

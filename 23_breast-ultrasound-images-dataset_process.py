@@ -5,17 +5,16 @@ from tqdm import tqdm
 
 from utils.ultrasound_dataset_build import UltrasoundDatasetBuild
 
-# 数据集信息
+# Dataset information
 data_root = '/media/ps/data/Datasets/ultrasound/Dataset_BUSI_with_GT'
 
-# 输出路径
+# Output path
 out_dir = '/media/ps/data/Datasets/ultrasound/bm_pre_json/23'
 
 tasks = 'breast'
 
 ud = UltrasoundDatasetBuild('23.breast-ultrasound-images-dataset', out_dir,
                             data_type='img', create_user='xxx')
-
 
 classes_list = os.listdir(data_root)
 
@@ -41,8 +40,26 @@ for class_name in classes_list:
                     seg2 = seg2.astype(bool)
                     seg = seg + seg2
                 seg = np.expand_dims(seg, 0)
-                ud.write_data(img, seg, classes=class_name, caption=None, box=None, anatomy=tasks, original_path=original_path)
-
+                
+                ud.write_data(
+                    data=img,
+                    seg=seg,
+                    seg_channel_name=['tumor'],
+                    classes=class_name,
+                    sub_classes=None,
+                    caption=None,
+                    report=None,
+                    box=None,
+                    anatomy=tasks,
+                    show_seg=False,
+                    measurement=None,
+                    demographic=None,
+                    biochemical=None,
+                    original_path=original_path,
+                    keypoints=None,
+                    keypoint_names=None,
+                    split=None
+                )
 
 ud.write_json()
 
