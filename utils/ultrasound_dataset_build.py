@@ -47,12 +47,13 @@ class UltrasoundDatasetBuild:
             'IncludeBiochemical': False,
             'IncludeMeasurement': False,
             'IncludeKeypoints': False,
+            'IncludeSplit': False,
             'SegChannel': 0,
             'AnatomyLocation': [],
             'ClassesList': [],
             'MeasuresList': [],
             'KeypointsList': [],
-            'DataInfo': {}
+            'DataInfo': {},
         }
 
 
@@ -142,7 +143,7 @@ class UltrasoundDatasetBuild:
 
     def write_data(self, data, seg=None, seg_channel_name=None, classes=None, sub_classes=None,
                    caption=None, report=None, box=None, anatomy='default', show_seg=False, measurement=None, demographic=None, biochemical=None, original_path=None,
-                   keypoints=None, keypoint_names=None):
+                   keypoints=None, keypoint_names=None, split=None):
         """
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
@@ -164,6 +165,7 @@ class UltrasoundDatasetBuild:
                         {"keypoint_name": [x, y], ...} where x,y are relative coordinates (0-1)
                         or None if the keypoint is not present
         :param keypoint_names: List of keypoint names to maintain consistent ordering
+        :param split: Which split this data belongs to ('train', 'val', 'test', or None)
         :return:
         """
 
@@ -218,11 +220,17 @@ class UltrasoundDatasetBuild:
             assert isinstance(biochemical, dict)
             self.dataset_info['IncludeBiochemical'] = True
 
+        # Record split information if provided
+        if split is not None:
+            assert split in ['train', 'val', 'test'], "Split must be one of: train, val, test"
+            self.dataset_info['IncludeSplit'] = True
+
 
 
         data_name = 'case%06d'%self.write_cnt
         DataInfo = {
             'anatomy_location': anatomy,
+            'split': split,
             'data_path': None,
             'original_path': original_path,
             'seg_path': None,
@@ -286,6 +294,8 @@ class UltrasoundDatasetBuild:
             DataInfo['data_path'] = os.path.join(self.dataset_info['dateset_name'], self.DataType, save_data_name)
 
         self.dataset_info['DataInfo'][data_name] = DataInfo
+
+
 
         self.write_cnt += 1
 
