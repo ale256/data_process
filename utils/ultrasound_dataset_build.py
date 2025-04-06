@@ -41,6 +41,7 @@ class UltrasoundDatasetBuild:
             'DataType': data_type,
             'IncludeSeg': False,
             'IncludeClasses': False,
+            'IncludeSubClasses': False,
             'IncludeCaption': False,
             'IncludeReport': False,
             'IncludeDemographic': False,
@@ -52,6 +53,7 @@ class UltrasoundDatasetBuild:
             'SegChannel': 0,
             'AnatomyLocation': [],
             'ClassesList': [],
+            'SubClassesList': [],
             'MeasuresList': [],
             'KeypointsList': [],
             'Notes': None,
@@ -215,9 +217,18 @@ class UltrasoundDatasetBuild:
                     self.dataset_info['MeasuresList'].append(key)
                     self.dataset_info['MeasuresList'].sort()
 
-        if classes not in self.dataset_info['ClassesList']:
-            self.dataset_info['ClassesList'].append(classes)
-            self.dataset_info['ClassesList'].sort()
+        if classes is not None:
+            self.dataset_info['IncludeClasses'] = True
+            if classes not in self.dataset_info['ClassesList']:
+                self.dataset_info['ClassesList'].append(classes)
+                self.dataset_info['ClassesList'].sort()
+
+        if sub_classes is not None:
+            self.dataset_info['IncludeSubClasses'] = True
+            if sub_classes not in self.dataset_info['SubClassesList']:
+                self.dataset_info['SubClassesList'].append(sub_classes)
+                self.dataset_info['SubClassesList'].sort()
+
 
         if keypoint_names is None:
             keypoint_names = []
