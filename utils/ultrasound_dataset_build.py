@@ -324,7 +324,7 @@ class UltrasoundDatasetBuild:
             assert seg is None
             save_data_name = 'case%06d.avi' % self.write_cnt
             shutil.copy(data, os.path.join(self.data_save_dir, save_data_name))
-            DataInfo['data_path'] = os.path.join(self.dataset_info['dateset_name'], self.DataType, save_data_name)
+            DataInfo['data_path'] = os.path.join(self.dataset_info['DatasetName'], self.DataType, save_data_name)
 
         self.dataset_info['DataInfo'][data_name] = DataInfo
 
