@@ -120,14 +120,20 @@ class UltrasoundDatasetBuild:
 
         参数:
         image (numpy.ndarray): 原始图像。
-        boxes (list): 目标检测框列表，格式为 [[<类别名> <x_center> <y_center> <width> <height>],...]
+        boxes (dict): 目标检测框字典，格式为 {class_name: [x_center, y_center, width, height]}
 
         返回:
         numpy.ndarray: 绘制了边界框的图像。
         """
+        if boxes is None:
+            return image
+        
         height, width = image.shape[:2]
-        for box in boxes:
-            class_name, x_center, y_center, relative_width, relative_height = box
+        image_with_boxes = image.copy()
+
+        for class_name, box_coords in boxes.items():
+            x_center, y_center, relative_width, relative_height = box_coords
+
 
             # 将相对坐标转换为绝对坐标
             x = int((x_center - relative_width / 2) * width)
@@ -136,12 +142,12 @@ class UltrasoundDatasetBuild:
             h = int(relative_height * height)
 
             # 绘制边界框
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.rectangle(image_with_boxes, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             # 绘制类别名
-            cv2.putText(image, class_name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            cv2.putText(image_with_boxes, class_name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-        return image
+        return image_with_boxes
 
     def write_data(self, *, data, seg, seg_channel_name, classes, sub_classes,
                    caption, report, box, anatomy, show_seg, 
