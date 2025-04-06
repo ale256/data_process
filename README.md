@@ -86,12 +86,13 @@ ud.write_data(data, seg=None, seg_channel_name=None, classes=None, sub_classes=N
 
 ## 更新日志：
 
-### ！！重要更新
+### ！！(Apr 5) 重要更新
 
 - argument改为**必须**输入，如果不需要，请传入None
 
 ### 2025年4月
 
+- **Apr 6**：新增备注栏，在write_data中可以添加notes(非必要)，以及引入ud.set_dataset_notes函数，可为整个数据集设置备注；若有数据集相关补充信息请放入此栏
 - **Apr 5**: 新增IncludeSplit记录 - 若原数据集中包含现成train/val/test split，则需依此输入至json文件中
 - **Apr 4**: 新增Keypoint Detection Task - 支持关键点检测任务
 - **Apr 4**: 新增IncludeMeasurement选项 - 用于记录测量指标

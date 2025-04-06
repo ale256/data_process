@@ -48,11 +48,13 @@ class UltrasoundDatasetBuild:
             'IncludeMeasurement': False,
             'IncludeKeypoints': False,
             'IncludeSplit': False,
+            'IncludeNotes': False,
             'SegChannel': 0,
             'AnatomyLocation': [],
             'ClassesList': [],
             'MeasuresList': [],
             'KeypointsList': [],
+            'Notes': None,
             'DataInfo': {},
         }
 
@@ -144,7 +146,7 @@ class UltrasoundDatasetBuild:
     def write_data(self, *, data, seg, seg_channel_name, classes, sub_classes,
                    caption, report, box, anatomy, show_seg, 
                    measurement, demographic, biochemical, original_path,
-                   keypoints, keypoint_names, split):
+                   keypoints, keypoint_names, split, notes=None):
         """
         All arguments are keyword arguments, and must be provided.
 
@@ -188,7 +190,7 @@ class UltrasoundDatasetBuild:
             'original_path': original_path,
             'keypoints': keypoints,
             'keypoint_names': keypoint_names,
-            'split': split
+            'split': split,
         }
 
         for arg_name, arg_value in required_args.items():
@@ -252,6 +254,9 @@ class UltrasoundDatasetBuild:
             assert split in ['train', 'val', 'test'], "Split must be one of: train, val, test"
             self.dataset_info['IncludeSplit'] = True
 
+        if notes is not None:
+            self.dataset_info['IncludeNotes'] = True
+
 
 
         data_name = 'case%06d'%self.write_cnt
@@ -271,6 +276,7 @@ class UltrasoundDatasetBuild:
             'keypoints': keypoints,
             'demographic': demographic,
             'biochemical': biochemical,
+            'notes': notes
         }
 
         if classes is not None:
@@ -322,9 +328,10 @@ class UltrasoundDatasetBuild:
 
         self.dataset_info['DataInfo'][data_name] = DataInfo
 
-
-
         self.write_cnt += 1
+
+    def set_dataset_notes(self, notes):
+        self.dataset_info['Notes'] = notes
 
     def write_json(self):
         self.dataset_info['DataNum'] = self.write_cnt
