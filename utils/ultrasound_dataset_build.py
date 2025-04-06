@@ -48,6 +48,7 @@ class UltrasoundDatasetBuild:
             'IncludeBiochemical': False,
             'IncludeMeasurement': False,
             'IncludeKeypoints': False,
+            'IncludeBox': False,
             'IncludeSplit': False,
             'IncludeNotes': False,
             'SegChannel': 0,
@@ -56,6 +57,7 @@ class UltrasoundDatasetBuild:
             'SubClassesList': [],
             'MeasuresList': [],
             'KeypointsList': [],
+            'BoxList': [],
             'Notes': None,
             'DataInfo': {},
         }
@@ -273,6 +275,22 @@ class UltrasoundDatasetBuild:
 
         if notes is not None:
             self.dataset_info['IncludeNotes'] = True
+
+        if box is not None:
+            self.dataset_info['IncludeBox'] = True
+            # Add any new box classes to BoxList
+            if isinstance(box, dict):
+                for box_class in box.keys():
+                    if box_class not in self.dataset_info['BoxList']:
+                        self.dataset_info['BoxList'].append(box_class)
+                        self.dataset_info['BoxList'].sort()
+            elif isinstance(box, list):
+                for box_dict in box:
+                    if isinstance(box_dict, dict):
+                        for box_class in box_dict.keys():
+                            if box_class not in self.dataset_info['BoxList']:
+                                self.dataset_info['BoxList'].append(box_class)
+                                self.dataset_info['BoxList'].sort()
 
 
 
