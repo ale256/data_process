@@ -35,6 +35,7 @@ class UltrasoundDatasetBuild:
 
         self.dataset_info = {
             'DatasetName': self.DatasetName,
+            'DatasetDescription': None,
             'CreateTime': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'CreateUser': create_user,
             'DataNum': 0,
@@ -51,6 +52,7 @@ class UltrasoundDatasetBuild:
             'IncludeBox': False,
             'IncludeSplit': False,
             'IncludeNotes': False,
+            'IncludePatientID': False,
             'SegChannel': 0,
             'AnatomyLocation': [],
             'ClassesList': [],
@@ -59,7 +61,9 @@ class UltrasoundDatasetBuild:
             'KeypointsList': [],
             'BoxList': [],
             'Notes': None,
+            'PatientIDFormat': None,
             'DataInfo': {},
+            
         }
 
 
@@ -153,10 +157,66 @@ class UltrasoundDatasetBuild:
 
         return image_with_boxes
 
+    @staticmethod
+    def analyze_patient_id_format(patient_id, current_format=None):
+        """
+        Analyzes a patient ID to determine its format and updates format tracking information.
+        
+        Args:
+            patient_id: The patient ID to analyze
+            current_format: Current format dictionary, if exists. Should contain keys:
+                - description: Text description of ID format
+                - min_value: Minimum ID value if numeric
+                - max_value: Maximum ID value if numeric
+                - pattern: Regex pattern or format string
+                - example: Example patient ID
+        
+        Returns:
+            dict: Updated format information dictionary
+        """
+        if current_format is None:
+            current_format = {
+                'description': None,
+                'min_value': None,
+                'max_value': None,
+                'pattern': None,
+                'example': None
+            }
+        
+        if patient_id is None:
+            return current_format
+        
+        # Initialize format if this is the first ID
+        if current_format['description'] is None:
+            if isinstance(patient_id, (int, str)):
+                if str(patient_id).isdigit():
+                    current_format['description'] = 'Numeric ID'
+                    current_format['pattern'] = 'Integer'
+                    current_format['min_value'] = int(patient_id)
+                    current_format['max_value'] = int(patient_id)
+                else:
+                    current_format['description'] = 'String ID'
+                    current_format['pattern'] = 'String'
+                
+                current_format['example'] = str(patient_id)
+        
+        # Update numeric ranges if applicable
+        elif current_format['description'] == 'Numeric ID' and str(patient_id).isdigit():
+            current_format['min_value'] = min(
+                current_format['min_value'],
+                int(patient_id)
+            )
+            current_format['max_value'] = max(
+                current_format['max_value'],
+                int(patient_id)
+            )
+        
+        return current_format
+
     def write_data(self, *, data, seg, seg_channel_name, classes, sub_classes,
                    caption, report, box, anatomy, show_seg, 
                    measurement, demographic, biochemical, original_path,
-                   keypoints, keypoint_names, split, notes=None):
+                   keypoints, keypoint_names, split, patient_id, notes=None):
         """
         All arguments are keyword arguments, and must be provided.
 
@@ -180,6 +240,7 @@ class UltrasoundDatasetBuild:
                         or None if the keypoint is not present
         :param keypoint_names: List of keypoint names to maintain consistent ordering
         :param split: Which split this data belongs to ('train', 'val', 'test', or None)
+        :param patient_id: Unique identifier for the patient this data belongs to
         :return:
         """
         # Check if all required parameters are provided
@@ -201,6 +262,7 @@ class UltrasoundDatasetBuild:
             'keypoints': keypoints,
             'keypoint_names': keypoint_names,
             'split': split,
+            'patient_id': patient_id,
         }
 
         for arg_name, arg_value in required_args.items():
@@ -292,7 +354,13 @@ class UltrasoundDatasetBuild:
                                 self.dataset_info['BoxList'].append(box_class)
                                 self.dataset_info['BoxList'].sort()
 
-
+        if patient_id is not None:
+            self.dataset_info['IncludePatientID'] = True
+            # Update PatientIDFormat using the analyzer
+            self.dataset_info['PatientIDFormat'] = self.analyze_patient_id_format(
+                patient_id, 
+                self.dataset_info['PatientIDFormat']
+            )
 
         data_name = 'case%06d'%self.write_cnt
         DataInfo = {
@@ -311,6 +379,7 @@ class UltrasoundDatasetBuild:
             'keypoints': keypoints,
             'demographic': demographic,
             'biochemical': biochemical,
+            'patient_id': patient_id,
             'notes': notes
         }
 
@@ -367,6 +436,9 @@ class UltrasoundDatasetBuild:
 
     def set_dataset_notes(self, notes):
         self.dataset_info['Notes'] = notes
+
+    def set_dataset_description(self, description):
+        self.dataset_info['DatasetDescription'] = description
 
     def write_json(self):
         self.dataset_info['DataNum'] = self.write_cnt

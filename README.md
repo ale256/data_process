@@ -88,12 +88,13 @@ ud.write_data(data, seg=None, seg_channel_name=None, classes=None, sub_classes=N
 
 ### ！！(Apr 5) 重要更新
 
-- argument改为**必须**输入，如果不需要，请传入None
+- write_data中全部argument改为**必须**输入，如果不需要，请传入None
 
 ### 2025年4月
 
+- **Apr 7**：新增patient_id作为write_data函数中必要argument（若无ID信息则输入None)；新增数据集描述栏，使用方法为ud.set_dataset_description("xxx")
 - **Apr 6**：fix dataset_info key error; fix draw_bounding_boxes_on_image function（感谢金泽反馈)
-- **Apr 6**：新增备注栏，在write_data中可以添加notes(非必要)，以及引入ud.set_dataset_notes函数，可为整个数据集设置备注；若有数据集相关补充信息请放入此栏
+- **Apr 6**：新增备注栏，在write_data中可以添加notes(非必要)；以及引入ud.set_dataset_notes函数，可为整个数据集设置备注，若有数据集相关补充信息请放入此栏；新增SubClassesList记录；新增BoxList记录
 - **Apr 5**: 新增IncludeSplit记录 - 若原数据集中包含现成train/val/test split，则需依此输入至json文件中
 - **Apr 4**: 新增Keypoint Detection Task - 支持关键点检测任务
 - **Apr 4**: 新增IncludeMeasurement选项 - 用于记录测量指标
