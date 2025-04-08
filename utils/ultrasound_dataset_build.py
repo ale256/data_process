@@ -2,10 +2,12 @@ import json
 import os
 import shutil
 from datetime import datetime
+from typing import Optional, Union
 
 import cv2
 import numpy as np
 from numpy import ndarray
+from numpy.typing import NDArray
 
 
 class UltrasoundDatasetBuild:
@@ -19,7 +21,7 @@ class UltrasoundDatasetBuild:
         """
         self.save_path = save_path
 
-        assert data_type in ['img', 'video']
+        assert data_type in ['img', 'video', 'mixture']
         self.DataType = data_type
 
         self.DatasetName = ultrasound_dataset_name
@@ -33,6 +35,7 @@ class UltrasoundDatasetBuild:
         self.seg_save_dir = os.path.join(self.save_path, self.DatasetName, 'seg')
 
         self.write_cnt = 0
+        self.sample_cnt = 0
 
         self.dataset_info = {
             'DatasetName': self.DatasetName,
@@ -43,7 +46,6 @@ class UltrasoundDatasetBuild:
             'DataType': data_type,
             'IncludeSeg': False,
             'IncludeClasses': False,
-            'IncludeSubClasses': False,
             'IncludeCaption': False,
             'IncludeReport': False,
             'IncludeDemographic': False,
@@ -56,8 +58,7 @@ class UltrasoundDatasetBuild:
             'IncludePatientID': False,
             'SegChannel': 0,
             'AnatomyLocation': [],
-            'ClassesList': [],
-            'SubClassesList': [],
+            'ClassesDict': {},
             'MeasuresList': [],
             'KeypointsList': [],
             'BoxList': [],
@@ -67,6 +68,36 @@ class UltrasoundDatasetBuild:
             
         }
 
+    def merge_dicts_keep_all(self, main_dict, new_dict):
+        for key, value in new_dict.items():
+            if key in main_dict:
+                # 如果键已存在
+                if isinstance(main_dict[key], dict) and isinstance(value, dict):
+                    # 递归合并子字典
+                    self.merge_dicts_keep_all(main_dict[key], value)
+                elif isinstance(main_dict[key], list):
+                    # 主字典的值是列表
+                    if isinstance(value, list):
+                        main_dict[key].extend(value)  # 合并列表
+                    else:
+                        main_dict[key].append(value)  # 追加单个值
+                    # 去重（保持顺序）
+                    seen = set()
+                    main_dict[key] = [x for x in main_dict[key] if not (x in seen or seen.add(x))]
+                    main_dict[key] = sorted(main_dict[key])
+                else:
+                    # 主字典的值不是列表
+                    if isinstance(value, list):
+                        new_list = [main_dict[key]] + value
+                        seen = set()
+                        main_dict[key] = [x for x in new_list if not (x in seen or seen.add(x))]
+                    else:
+                        if main_dict[key] != value:  # 避免重复
+                            main_dict[key] = [main_dict[key], value]
+            else:
+                # 键不存在，直接赋值
+                main_dict[key] = value
+        return main_dict
 
     def init_save_folder(self):
         try:
@@ -214,18 +245,17 @@ class UltrasoundDatasetBuild:
         
         return current_format
 
-    def write_data(self, *, data, seg, seg_channel_name: list, classes, sub_classes: str,
-                   caption: str, report: str, box: list, anatomy: str, show_seg: bool,
-                   measurement: dict, demographic: dict, biochemical: dict, original_path: str,
-                   keypoints: list, keypoint_names: list, split: str, patient_id: str, notes=None):
+    def write_data(self, *, data, seg: Optional[NDArray[bool]] = None, seg_channel_name: Optional[list] = None, classes_dic: Optional[dict] = None,
+                   caption: Optional[str] = None, report: Optional[str] = None, box: Optional[list] = None, anatomy: Optional[str] = 'default', show_seg: bool,
+                   measurement: Optional[dict] = None, demographic: Optional[dict] = None, biochemical: Optional[dict] = None, original_path: Optional[Union[str, list]],
+                   keypoints: Optional[dict] = None, keypoint_names: Optional[list] = None, split: Optional[str] = None, patient_id: str, notes: Optional[str] = None):
         """
         All arguments are keyword arguments, and must be provided.
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径，可以是一个列表，包含多个数据
         :param seg: 分割图像，默认为None，只有在传入的是img数据才会有seg,输入格式为（c,h,w）,保存为npy格式,dtype为bool
         :param seg_channel_name: 分割类别，格式：list ['tumor', ...]，对应seg的通道数
-        :param classes: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别
-        :param sub_classes: 图像二级分类，可选
+        :param classes_dic: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别，输入一个字典，可以包含多个类别
         :param caption: 图像/视频标题，text文本
         :param report: 图像/视频报告，text文本
         :param box: 目标检测框 请传入一个字典，格式 { 类别名 ：[<x_center> <y_center> ],[...],...}，  x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
@@ -250,8 +280,7 @@ class UltrasoundDatasetBuild:
             'data': data,
             'seg': seg,
             'seg_channel_name': seg_channel_name,
-            'classes': classes,
-            'sub_classes': sub_classes,
+            'classes': classes_dic,
             'caption': caption,
             'report': report,
             'box': box,
@@ -272,7 +301,7 @@ class UltrasoundDatasetBuild:
                 raise ValueError(f"Argument '{arg_name}' is not provided. Please input None if not included in the dataset.")
         
 
-        if seg_channel_name is None:
+        if seg_channel_name is None and seg is not None:
             seg_channel_name = ['tumor']
 
         if measurement is not None:
@@ -283,18 +312,10 @@ class UltrasoundDatasetBuild:
                     self.dataset_info['MeasuresList'].append(key)
                     self.dataset_info['MeasuresList'].sort()
 
-        if classes is not None:
+        if classes_dic is not None:
             self.dataset_info['IncludeClasses'] = True
-            if classes not in self.dataset_info['ClassesList']:
-                self.dataset_info['ClassesList'].append(classes)
-                self.dataset_info['ClassesList'].sort()
-
-        if sub_classes is not None:
-            self.dataset_info['IncludeSubClasses'] = True
-            if sub_classes not in self.dataset_info['SubClassesList']:
-                self.dataset_info['SubClassesList'].append(sub_classes)
-                self.dataset_info['SubClassesList'].sort()
-
+            self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dic)
+            self.dataset_info['ClassesDict'] = {k: self.dataset_info['ClassesDict'][k] for k in sorted(self.dataset_info['ClassesDict'])}
 
         if keypoint_names is None:
             keypoint_names = []
@@ -372,8 +393,7 @@ class UltrasoundDatasetBuild:
             'original_path': original_path,
             'seg_path': None,
             'seg_channel_name': seg_channel_name,
-            'classes': classes,
-            'sub_classes': sub_classes,
+            'classes': classes_dic,
             'caption': caption,
             'report': report,
             'box': box,
@@ -385,7 +405,7 @@ class UltrasoundDatasetBuild:
             'notes': notes
         }
 
-        if classes is not None:
+        if classes_dic is not None:
             self.dataset_info['IncludeClasses'] = True
 
         if self.DataType == 'img':
@@ -425,16 +445,41 @@ class UltrasoundDatasetBuild:
 
                         box_list.append(boxes)
                     DataInfo['box'] = box_list
+            self.write_cnt += 1
         elif self.DataType == 'video':
             assert data.lower().endswith('avi')
             assert seg is None
             save_data_name = 'case%06d.avi' % self.write_cnt
             shutil.copy(data, os.path.join(self.data_save_dir, save_data_name))
             DataInfo['data_path'] = os.path.join(self.dataset_info['DatasetName'], self.DataType, save_data_name)
+            self.write_cnt += 1
+        elif self.DataType == 'mixture':
+            assert isinstance(data, list)
+            DataInfo['data_path'] = []
+            for data_item in data:
+                if isinstance(data_item, ndarray):
+                    try:
+                        h, w, c = data_item.shape
+                        assert c < h
+                    except:
+                        assert data_item.ndim == 2
+                    save_data_name = 'case%06d.png' % self.write_cnt
+                    cv2.imwrite(os.path.join(self.data_save_dir, save_data_name), data_item)
+                    DataInfo['data_path'].append(os.path.join(self.dataset_info['DatasetName'], self.DataType,
+                                                         save_data_name))
+                elif isinstance(data_item, str):
+                    assert data_item.lower().endswith('avi')
+                    save_data_name = 'case%06d.avi' % self.write_cnt
+                    shutil.copy(data_item, os.path.join(self.data_save_dir, save_data_name))
+                    DataInfo['data_path'].append(os.path.join(self.dataset_info['DatasetName'], self.DataType,
+                                                         save_data_name))
+                self.write_cnt += 1
+
+        self.sample_cnt += 1
 
         self.dataset_info['DataInfo'][data_name] = DataInfo
 
-        self.write_cnt += 1
+
 
     def set_dataset_notes(self, notes):
         self.dataset_info['Notes'] = notes
@@ -443,7 +488,13 @@ class UltrasoundDatasetBuild:
         self.dataset_info['DatasetDescription'] = description
 
     def write_json(self):
-        self.dataset_info['DataNum'] = self.write_cnt
+        self.dataset_info['DataNum'] = self.sample_cnt
+        if isinstance(self.dataset_info['DataNum'], dict):
+            for key, value in self.dataset_info['DataNum'].items():
+                if isinstance(value, (np.int64, np.int32)):
+                    self.dataset_info['DataNum'][key] = int(value)
+                elif isinstance(value, np.ndarray):
+                    self.dataset_info['DataNum'][key] = value.tolist()
         # 以写入模式打开文件，并使用 json.dump() 方法将数据写入文件
         with open(self.save_json_path, 'w') as file:
             # ensure_ascii=False 确保非 ASCII 字符能正确保存
