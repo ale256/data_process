@@ -37,11 +37,13 @@ ud.init_save_folder()
 第四步：调用UltrasoundDatasetBuild类中的写入数据函数
 
 ```python
-ud.write_data(*, data, seg, seg_channel_name: list, classes_dic: Optional[dict] = None,
-                   caption: Optional[str] = None, report: Optional[str] = None, box: Optional[list] = None, anatomy: Optional[str] = 'default', show_seg: bool,
-                   measurement: Optional[dict] = None, demographic: Optional[dict] = None, biochemical: Optional[dict] = None, original_path: str,
-                   keypoints: Optional[dict] = None, keypoint_names: Optional[list] = None, split: Optional[str] = None, patient_id: str, notes: Optional[str] = None)
-        
+ud.write_data(*, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[list],
+                classes_dic: Optional[dict], caption: Optional[str], report: Optional[str], 
+		box: Optional[list], anatomy: Optional[str], show_seg: bool = False, 
+		measurement: Optional[dict], demographic: Optional[dict], biochemical: Optional[dict], 
+		original_path: Optional[Union[str, list]], keypoints: Optional[dict], keypoint_names: Optional[list], 
+		split: Optional[str], patient_id: str, notes: Optional[str] = None)
+ 
 ```
 
 - :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径，可以是一个列表，包含多个数据
@@ -82,13 +84,13 @@ ud.write_data(*, data, seg, seg_channel_name: list, classes_dic: Optional[dict] 
    ]
 6. 对于没有规定命名的字典，比如measurement，请参看注释里的命名方法
 7. 可以参照 [23_breast-ultrasound-images-dataset_process.py](23_breast-ultrasound-images-dataset_process.py) 程序查看数据库建立的具体流程
-8. 有问题请联系翁韬涵
 
 ## 更新日志：
 
-### ！！(Apr 5) 重要更新
+### ！！重要更新
 
-- write_data中全部argument改为**必须**输入，如果不需要，请传入None
+- **Apr 5**: write_data中全部argument改为**必须**输入，如果不需要，请传入None
+- **Apr 8 (@WTH)**：data支持列表输入，需要在定义类的时候把type改成mixture，同时如果输入是列表输入将不支持传分割图，相当于对应一个病人有多个图像的情况；取消了sub classes，现在的classes变成了classes_dict，对应一个病例可能有多个分类任务以及分级的情况
 
 ### 2025年4月
 

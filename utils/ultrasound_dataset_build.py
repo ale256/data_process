@@ -245,10 +245,8 @@ class UltrasoundDatasetBuild:
         
         return current_format
 
-    def write_data(self, *, data, seg: Optional[NDArray[bool]] = None, seg_channel_name: Optional[list] = None, classes_dic: Optional[dict] = None,
-                   caption: Optional[str] = None, report: Optional[str] = None, box: Optional[list] = None, anatomy: Optional[str] = 'default', show_seg: bool,
-                   measurement: Optional[dict] = None, demographic: Optional[dict] = None, biochemical: Optional[dict] = None, original_path: Optional[Union[str, list]],
-                   keypoints: Optional[dict] = None, keypoint_names: Optional[list] = None, split: Optional[str] = None, patient_id: str, notes: Optional[str] = None):
+    def write_data(self, *, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[list],
+                classes_dic: Optional[dict], caption: Optional[str], report: Optional[str], box: Optional[list], anatomy: Optional[str], show_seg: bool, measurement: Optional[dict], demographic: Optional[dict], biochemical: Optional[dict], original_path: Optional[Union[str, list]], keypoints: Optional[dict], keypoint_names: Optional[list], split: Optional[str], patient_id: str, notes: Optional[str]):
         """
         All arguments are keyword arguments, and must be provided.
 
