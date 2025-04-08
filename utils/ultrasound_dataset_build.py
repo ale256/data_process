@@ -5,6 +5,7 @@ from datetime import datetime
 
 import cv2
 import numpy as np
+from numpy import ndarray
 
 
 class UltrasoundDatasetBuild:
@@ -213,20 +214,20 @@ class UltrasoundDatasetBuild:
         
         return current_format
 
-    def write_data(self, *, data, seg, seg_channel_name, classes, sub_classes,
-                   caption, report, box, anatomy, show_seg, 
-                   measurement, demographic, biochemical, original_path,
-                   keypoints, keypoint_names, split, patient_id, notes=None):
+    def write_data(self, *, data, seg, seg_channel_name: list, classes, sub_classes: str,
+                   caption: str, report: str, box: list, anatomy: str, show_seg: bool,
+                   measurement: dict, demographic: dict, biochemical: dict, original_path: str,
+                   keypoints: list, keypoint_names: list, split: str, patient_id: str, notes=None):
         """
         All arguments are keyword arguments, and must be provided.
 
-        :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
+        :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径，可以是一个列表，包含多个数据
         :param seg: 分割图像，默认为None，只有在传入的是img数据才会有seg,输入格式为（c,h,w）,保存为npy格式,dtype为bool
         :param seg_channel_name: 分割类别，格式：list ['tumor', ...]，对应seg的通道数
         :param classes: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别
-        :param classes: 图像二级分类，可选
+        :param sub_classes: 图像二级分类，可选
         :param caption: 图像/视频标题，text文本
-        :param caption: 图像/视频报告，text文本
+        :param report: 图像/视频报告，text文本
         :param box: 目标检测框 请传入一个字典，格式 { 类别名 ：[<x_center> <y_center> ],[...],...}，  x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
         :param anatomy: 图像对应身体的哪一个部位，比如肺部超声，如果数据集没有说明就写default
         :param show_seg: 可视化分割图像转化的目标检测框，用于调试
@@ -241,6 +242,7 @@ class UltrasoundDatasetBuild:
         :param keypoint_names: List of keypoint names to maintain consistent ordering
         :param split: Which split this data belongs to ('train', 'val', 'test', or None)
         :param patient_id: Unique identifier for the patient this data belongs to
+        :param notes: 数据集注释
         :return:
         """
         # Check if all required parameters are provided
