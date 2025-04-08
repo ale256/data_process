@@ -455,6 +455,7 @@ class UltrasoundDatasetBuild:
             self.write_cnt += 1
         elif self.DataType == 'mixture':
             assert isinstance(data, list)
+            assert seg is None
             DataInfo['data_path'] = []
             for data_item in data:
                 if isinstance(data_item, ndarray):
