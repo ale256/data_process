@@ -90,10 +90,11 @@ ud.write_data(*, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[
 ### ！！重要更新
 
 - **Apr 5**: write_data中全部argument改为**必须**输入，如果不需要，请传入None
-- **Apr 8 (@WTH)**：data支持列表输入，需要在定义类的时候把type改成mixture，同时如果输入是列表输入将不支持传分割图，相当于对应一个病人有多个图像的情况；取消了sub classes，现在的classes变成了classes_dict，对应一个病例可能有多个分类任务以及分级的情况
+- **Apr 8 (@WTH)**：取消了sub classes，现在的classes变成了classes_dict，对应一个病例可能有多个分类任务以及分级的情况
 
 ### 2025年4月
 
+- **Apr 8 (@WTH)**：data支持列表输入，需要在定义类的时候把type改成mixture，同时如果输入是列表输入将不支持传分割图，相当于对应一个病人有多个图像的情况
 - **Apr 7**：新增patient_id作为write_data函数中必要argument（若无ID信息则输入None)；新增数据集描述栏，使用方法为ud.set_dataset_description("xxx")
 - **Apr 6**：fix dataset_info key error; fix draw_bounding_boxes_on_image function（感谢金泽反馈)
 - **Apr 6**：新增备注栏，在write_data中可以添加notes(非必要)；以及引入ud.set_dataset_notes函数，可为整个数据集设置备注，若有数据集相关补充信息请放入此栏；新增SubClassesList记录；新增BoxList记录
