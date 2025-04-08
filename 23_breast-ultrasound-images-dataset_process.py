@@ -11,7 +11,7 @@ data_root = '/media/ps/data/Datasets/ultrasound/Dataset_BUSI_with_GT'
 # Output path
 out_dir = '/media/ps/data/Datasets/ultrasound/bm_pre_json/23'
 
-tasks = 'breast'
+tasks = 'malignant breast cancer'
 
 ud = UltrasoundDatasetBuild('23.breast-ultrasound-images-dataset', out_dir,
                             data_type='img', create_user='xxx')
@@ -20,6 +20,7 @@ classes_list = os.listdir(data_root)
 
 ud.init_save_folder()
 
+cnt = 0
 for class_name in classes_list:
     data_path = os.path.join(data_root, class_name)
     if os.path.isdir(data_path):
@@ -40,13 +41,16 @@ for class_name in classes_list:
                     seg2 = seg2.astype(bool)
                     seg = seg + seg2
                 seg = np.expand_dims(seg, 0)
+
+                class_dic = {
+                    tasks: class_name,
+                }
                 
                 ud.write_data(
                     data=img,
                     seg=seg,
                     seg_channel_name=['tumor'],
-                    classes=class_name,
-                    sub_classes=None,
+                    classes_dic=class_dic,
                     caption=None,
                     report=None,
                     box=None,
@@ -58,8 +62,10 @@ for class_name in classes_list:
                     original_path=original_path,
                     keypoints=None,
                     keypoint_names=None,
-                    split=None
+                    split=None,
+                    patient_id='%05d'%cnt,
                 )
+                cnt += 1
 
 ud.write_json()
 

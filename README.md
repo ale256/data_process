@@ -37,17 +37,17 @@ ud.init_save_folder()
 第四步：调用UltrasoundDatasetBuild类中的写入数据函数
 
 ```python
-ud.write_data(data, seg=None, seg_channel_name=None, classes=None, sub_classes=None,
-              caption=None, report=None, box=None, anatomy='default', show_seg=False, 
-              measurement=None, demographic=None, biochemical=None, original_path=None,
-              keypoints=None, keypoint_names=None, split=None)
+ud.write_data(*, data, seg, seg_channel_name: list, classes_dic: Optional[dict] = None,
+                   caption: Optional[str] = None, report: Optional[str] = None, box: Optional[list] = None, anatomy: Optional[str] = 'default', show_seg: bool,
+                   measurement: Optional[dict] = None, demographic: Optional[dict] = None, biochemical: Optional[dict] = None, original_path: str,
+                   keypoints: Optional[dict] = None, keypoint_names: Optional[list] = None, split: Optional[str] = None, patient_id: str, notes: Optional[str] = None)
+        
 ```
 
-- :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
+- :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径，可以是一个列表，包含多个数据
 - :param seg: 分割图像，默认为None，只有在传入的是img数据才会有seg,输入格式为（c,h,w）,保存为npy格式,dtype为bool
 - :param seg_channel_name: 分割类别，格式：list ['tumor', ...]，对应seg的通道数
-- :param classes: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别
-- :param sub_classes: 图像二级分类，可选
+- :param classes_dic: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别，输入一个字典，可以包含多个类别
 - :param caption: 图像/视频标题，text文本
 - :param report: 图像/视频报告，text文本
 - :param box: 目标检测框，请传入一个字典，格式 { 类别名 ：[<x_center> <y_center> ],[...],...}， x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
