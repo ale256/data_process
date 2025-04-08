@@ -38,7 +38,7 @@ ud.init_save_folder()
 
 ```python
 ud.write_data(*, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[list],
-                classes_dic: Optional[dict], caption: Optional[str], report: Optional[str], 
+                classes_dict: Optional[dict], caption: Optional[str], report: Optional[str], 
 		box: Optional[list], anatomy: Optional[str], show_seg: bool = False, 
 		measurement: Optional[dict], demographic: Optional[dict], biochemical: Optional[dict], 
 		original_path: Optional[Union[str, list]], keypoints: Optional[dict], keypoint_names: Optional[list], 

@@ -246,14 +246,14 @@ class UltrasoundDatasetBuild:
         return current_format
 
     def write_data(self, *, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[list],
-                classes_dic: Optional[dict], caption: Optional[str], report: Optional[str], box: Optional[list], anatomy: Optional[str], show_seg: bool, measurement: Optional[dict], demographic: Optional[dict], biochemical: Optional[dict], original_path: Optional[Union[str, list]], keypoints: Optional[dict], keypoint_names: Optional[list], split: Optional[str], patient_id: str, notes: Optional[str]):
+                classes_dict: Optional[dict], caption: Optional[str], report: Optional[str], box: Optional[list], anatomy: Optional[str], show_seg: bool = False, measurement: Optional[dict], demographic: Optional[dict], biochemical: Optional[dict], original_path: Optional[Union[str, list]], keypoints: Optional[dict], keypoint_names: Optional[list], split: Optional[str], patient_id: str, notes: Optional[str] = None):
         """
         All arguments are keyword arguments, and must be provided.
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径，可以是一个列表，包含多个数据
         :param seg: 分割图像，默认为None，只有在传入的是img数据才会有seg,输入格式为（c,h,w）,保存为npy格式,dtype为bool
         :param seg_channel_name: 分割类别，格式：list ['tumor', ...]，对应seg的通道数
-        :param classes_dic: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别，输入一个字典，可以包含多个类别
+        :param classes_dict: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别，输入一个字典，可以包含多个类别
         :param caption: 图像/视频标题，text文本
         :param report: 图像/视频报告，text文本
         :param box: 目标检测框 请传入一个字典，格式 { 类别名 ：[<x_center> <y_center> ],[...],...}，  x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
@@ -278,7 +278,7 @@ class UltrasoundDatasetBuild:
             'data': data,
             'seg': seg,
             'seg_channel_name': seg_channel_name,
-            'classes': classes_dic,
+            'classes': classes_dict,
             'caption': caption,
             'report': report,
             'box': box,
@@ -310,9 +310,9 @@ class UltrasoundDatasetBuild:
                     self.dataset_info['MeasuresList'].append(key)
                     self.dataset_info['MeasuresList'].sort()
 
-        if classes_dic is not None:
+        if classes_dict is not None:
             self.dataset_info['IncludeClasses'] = True
-            self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dic)
+            self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dict)
             self.dataset_info['ClassesDict'] = {k: self.dataset_info['ClassesDict'][k] for k in sorted(self.dataset_info['ClassesDict'])}
 
         if keypoint_names is None:
@@ -391,7 +391,7 @@ class UltrasoundDatasetBuild:
             'original_path': original_path,
             'seg_path': None,
             'seg_channel_name': seg_channel_name,
-            'classes': classes_dic,
+            'classes': classes_dict,
             'caption': caption,
             'report': report,
             'box': box,
@@ -403,7 +403,7 @@ class UltrasoundDatasetBuild:
             'notes': notes
         }
 
-        if classes_dic is not None:
+        if classes_dict is not None:
             self.dataset_info['IncludeClasses'] = True
 
         if self.DataType == 'img':

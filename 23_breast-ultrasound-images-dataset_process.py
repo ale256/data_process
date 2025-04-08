@@ -50,7 +50,7 @@ for class_name in classes_list:
                     data=img,
                     seg=seg,
                     seg_channel_name=['tumor'],
-                    classes_dic=class_dic,
+                    classes_dict=class_dic,
                     caption=None,
                     report=None,
                     box=None,
