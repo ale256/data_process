@@ -245,7 +245,7 @@ class UltrasoundDatasetBuild:
         
         return current_format
 
-    def write_data(self, *, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[list],
+    def write_data(self, *, data, seg: Optional[ndarray], seg_channel_name: Optional[list],
                 classes_dict: Optional[dict], caption: Optional[str], report: Optional[str], box: Optional[list], anatomy: Optional[str], show_seg: bool = False, measurement: Optional[dict], demographic: Optional[dict], biochemical: Optional[dict], original_path: Optional[Union[str, list]], keypoints: Optional[dict], keypoint_names: Optional[list], split: Optional[str], patient_id: str, notes: Optional[str] = None):
         """
         All arguments are keyword arguments, and must be provided.
@@ -453,9 +453,15 @@ class UltrasoundDatasetBuild:
             self.write_cnt += 1
         elif self.DataType == 'mixture':
             assert isinstance(data, list)
-            assert seg is None
+            if seg is not None:
+                assert isinstance(seg, list)
+                assert len(data) == len(seg)
+                os.makedirs(self.seg_save_dir, exist_ok=True)
+            
             DataInfo['data_path'] = []
-            for data_item in data:
+            DataInfo['seg_path'] = []
+            
+            for idx, data_item in enumerate(data):
                 if isinstance(data_item, ndarray):
                     try:
                         h, w, c = data_item.shape
@@ -466,12 +472,29 @@ class UltrasoundDatasetBuild:
                     cv2.imwrite(os.path.join(self.data_save_dir, save_data_name), data_item)
                     DataInfo['data_path'].append(os.path.join(self.dataset_info['DatasetName'], self.DataType,
                                                          save_data_name))
+                    
+                    # Handle segmentation if provided
+                    if seg is not None and seg[idx] is not None:
+                        c, h, w = seg[idx].shape
+                        assert c < h
+                        assert seg[idx].dtype == bool
+                        assert len(seg_channel_name) == c
+                        self.dataset_info['SegChannel'] = c
+                        self.dataset_info['IncludeSeg'] = True
+                        
+                        save_seg_name = 'case%06d.npy' % self.write_cnt
+                        np.save(os.path.join(self.seg_save_dir, save_seg_name), seg[idx])
+                        DataInfo['seg_path'].append(os.path.join(self.dataset_info['DatasetName'], 'seg', save_seg_name))
+                    else:
+                        DataInfo['seg_path'].append(None)
+                        
                 elif isinstance(data_item, str):
                     assert data_item.lower().endswith('avi')
                     save_data_name = 'case%06d.avi' % self.write_cnt
                     shutil.copy(data_item, os.path.join(self.data_save_dir, save_data_name))
                     DataInfo['data_path'].append(os.path.join(self.dataset_info['DatasetName'], self.DataType,
                                                          save_data_name))
+                    DataInfo['seg_path'].append(None)  # Videos don't have segmentation
                 self.write_cnt += 1
 
         self.sample_cnt += 1
