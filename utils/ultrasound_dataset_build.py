@@ -403,9 +403,6 @@ class UltrasoundDatasetBuild:
             'notes': notes
         }
 
-        if classes_dict is not None:
-            self.dataset_info['IncludeClasses'] = True
-
         if self.DataType == 'img':
             assert isinstance(data, np.ndarray)
             try:
@@ -458,10 +455,27 @@ class UltrasoundDatasetBuild:
                 assert len(data) == len(seg)
                 os.makedirs(self.seg_save_dir, exist_ok=True)
             
+            # Handle classes_dict validation
+            if classes_dict is not None:
+                assert isinstance(classes_dict, (dict, list)), "classes_dict must be a dictionary or list of dictionaries"
+                if isinstance(classes_dict, list):
+                    # Verify list length matches data length
+                    assert len(classes_dict) == len(data), "classes_dict list length must match data length"
+            
             DataInfo['data_path'] = []
             DataInfo['seg_path'] = []
+            DataInfo['classes'] = classes_dict  # Keep original format
             
             for idx, data_item in enumerate(data):
+                # Update dataset-level class information
+                if classes_dict is not None:
+                    if isinstance(classes_dict, list):
+                        current_classes = classes_dict[idx]
+                        if current_classes is not None:
+                            self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], current_classes)
+                    else:  # dict case
+                        self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dict)
+
                 if isinstance(data_item, ndarray):
                     try:
                         h, w, c = data_item.shape

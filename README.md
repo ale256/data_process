@@ -94,6 +94,7 @@ ud.write_data(*, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[
 
 ### 2025年4月
 
+- **Apr 11**: mixture data type下classes_dict支持list
 - **Apr 9**：mixture data type下img_list支持seg_list
 - **Apr 8 (@WTH)**：data支持列表输入，需要在定义类的时候把type改成mixture，同时如果输入是列表输入将不支持传分割图，相当于对应一个病人有多个图像的情况
 - **Apr 7**：新增patient_id作为write_data函数中必要argument（若无ID信息则输入None)；新增数据集描述栏，使用方法为ud.set_dataset_description("xxx")
