@@ -94,6 +94,7 @@ ud.write_data(*, data, seg: Optional[NDArray[bool]], seg_channel_name: Optional[
 
 ### 2025年4月
 
+- **Apr 13**: mixture data type下list of classes_dict bug修改 (感谢金泽反馈)
 - **Apr 11**: mixture data type下classes_dict支持list
 - **Apr 9**：mixture data type下img_list支持seg_list
 - **Apr 8 (@WTH)**：data支持列表输入，需要在定义类的时候把type改成mixture，同时如果输入是列表输入将不支持传分割图，相当于对应一个病人有多个图像的情况

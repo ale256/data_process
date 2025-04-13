@@ -312,8 +312,11 @@ class UltrasoundDatasetBuild:
 
         if classes_dict is not None:
             self.dataset_info['IncludeClasses'] = True
-            self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dict)
-            self.dataset_info['ClassesDict'] = {k: self.dataset_info['ClassesDict'][k] for k in sorted(self.dataset_info['ClassesDict'])}
+            if self.DataType == 'img' or self.DataType == 'video':
+                self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dict)
+                self.dataset_info['ClassesDict'] = {k: self.dataset_info['ClassesDict'][k] for k in sorted(self.dataset_info['ClassesDict'])}
+            elif self.DataType == 'mixture':
+                pass # postpone sorting to later stage until after mixture data is processed
 
         if keypoint_names is None:
             keypoint_names = []
@@ -475,6 +478,7 @@ class UltrasoundDatasetBuild:
                             self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], current_classes)
                     else:  # dict case
                         self.merge_dicts_keep_all(self.dataset_info['ClassesDict'], classes_dict)
+                    self.dataset_info['ClassesDict'] = {k: self.dataset_info['ClassesDict'][k] for k in sorted(self.dataset_info['ClassesDict'])}
 
                 if isinstance(data_item, ndarray):
                     try:
